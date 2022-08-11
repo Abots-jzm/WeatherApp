@@ -6,12 +6,135 @@
   box-sizing: inherit;
 }
 
+:root {
+  --primary-color: #1E213A;
+  --color-off-white: #E7E7EB;
+  --color-gray-text: #88869D;
+}
+
 html {
-  box-sizing: border-box;
+  box-sizing: inherit;
   font-size: 62.5%;
 }
 
 body {
   font-family: "Raleway", sans-serif;
   font-weight: 500;
+}
+
+main {
+  background-color: #100E1D;
+  display: flex;
+}
+
+.sidebar {
+  background-color: var(--primary-color);
+  flex-basis: 45rem;
+}
+
+.sidebar-top {
+  display: flex;
+  margin: 4.2rem 4.6rem 2rem 4.6rem;
+  justify-content: space-between;
+  align-items: center;
+  color: var(--color-off-white);
+
+  &__search {
+    background-color: #6E707A;
+    padding: 1rem 1.8rem;
+    font-size: 1.6rem;
+  }
+
+  &__current-location {
+    background-color: #6E707A;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 4.5rem;
+    width: 4.5rem;
+  }
+}
+
+.sidebar-body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.weather-illustration {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 37.5rem;
+  width: 100%;
+  position: relative;
+  margin-bottom: 3rem;
+
+  &::after {
+    content: "";
+    background-image: url("./../../img/Cloud-background.png");
+    background-size: cover;
+    background-position: center;
+    opacity: 0.1;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
+    position: absolute;
+    z-index: 1;
+  }
+}
+
+.temperature-details {
+  display: flex;
+  flex-direction: column;
+  gap: 8.7rem;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8.7rem;
+
+  .current-temperature {
+    color: var(--color-off-white);
+    font-size: 14.4rem;
+
+    span {
+      color: #A09FB1;
+      font-size: 4.8rem;
+    }
+  }
+
+  .current-weather {
+    color: #A09FB1;
+    font-size: 3.6rem;
+    text-transform: capitalize;
+  }
+}
+
+.other-details {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+  color: var(--color-gray-text);
+  font-size: 1.8rem;
+  gap: 3.2rem;
+  margin-bottom: 5.2rem;
+
+  .current-time {
+    display: flex;
+    justify-content: space-between;
+    gap: 1.6rem;
+  }
+
+  .current-location {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: .9rem;
+
+    &--icon{
+
+    }
+  }
 }
