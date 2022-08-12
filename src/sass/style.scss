@@ -13,7 +13,7 @@
 }
 
 html {
-  box-sizing: inherit;
+  box-sizing: border-box;
   font-size: 62.5%;
 }
 
@@ -25,11 +25,20 @@ body {
 main {
   background-color: #100E1D;
   display: flex;
+
+  @media only screen and (max-width: 600px) {
+    flex-direction: column;
+  }
 }
 
 .sidebar {
   background-color: var(--primary-color);
-  flex-basis: 45rem;
+  flex: 1;
+  position: relative;
+
+  @media only screen and (max-width: 600px) {
+    flex: none;
+  }
 }
 
 .sidebar-top {
@@ -39,20 +48,43 @@ main {
   align-items: center;
   color: var(--color-off-white);
 
-  &__search {
+  @media only screen and (max-width: 1000px) {
+    flex-direction: column;
+    align-items: start;
+    gap: 1rem;
+  }
+
+  @media only screen and (max-width: 600px) {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    margin: 2.5rem 2.5rem 0;
+  }
+
+  &__search,
+  &__current-location {
     background-color: #6E707A;
+    cursor: pointer;
+    transition: all .3s;
+
+    &:hover {
+      background-color: var(--color-off-white);
+      color: #6E707A;
+    }
+  }
+
+  &__search {
     padding: 1rem 1.8rem;
     font-size: 1.6rem;
   }
 
   &__current-location {
-    background-color: #6E707A;
     border-radius: 50%;
     display: flex;
     justify-content: center;
     align-items: center;
-    height: 4.5rem;
-    width: 4.5rem;
+    height: 4rem;
+    width: 4rem;
   }
 }
 
@@ -70,6 +102,10 @@ main {
   width: 100%;
   position: relative;
   margin-bottom: 3rem;
+
+  @media only screen and (max-width: 600px) {
+    height: 32.6rem;
+  }
 
   &::after {
     content: "";
@@ -93,6 +129,11 @@ main {
   justify-content: space-between;
   align-items: center;
   margin-bottom: 8.7rem;
+
+  @media only screen and (max-width: 600px) {
+    gap: 2.3rem;
+    margin-bottom: 4.8rem;
+  }
 
   .current-temperature {
     color: var(--color-off-white);
@@ -121,6 +162,10 @@ main {
   gap: 3.2rem;
   margin-bottom: 5.2rem;
 
+  @media only screen and (max-width: 600px) {
+    margin-bottom: 10.5rem;
+  }
+
   .current-time {
     display: flex;
     justify-content: space-between;
@@ -132,9 +177,141 @@ main {
     justify-content: space-between;
     align-items: center;
     gap: .9rem;
+  }
+}
 
-    &--icon{
+.searchbar {
+  position: absolute;
+  left: 0;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 2;
+  background-color: var(--primary-color);
+}
+
+.searchbar-close {
+  margin: 2rem 5.3rem 4.5rem;
+  font-size: 1.8rem;
+  text-align: right;
+  color: var(--color-off-white);
+
+  @media only screen and (max-width: 600px) {
+    margin: 1.8rem 1.8rem 3rem;
+  }
+}
+
+.searchbar-top {
+  margin: 0 4.6rem 5.8rem;
+  display: flex;
+  gap: 1.2rem;
+
+  @media only screen and (max-width: 600px) {
+    @media only screen and (max-width: 600px) {
+      margin: 0 1.2rem 3.8rem;
+    }
+  }
+
+  &__input {
+    flex: 1;
+    overflow: hidden;
+    position: relative;
+
+    input {
+      width: 100%;
+      background-color: transparent;
+      border: 1px solid var(--color-off-white);
+      padding: 1.5rem;
+      font-size: 1.6rem;
+      color: var(--color-off-white);
+
+      &:focus + label {
+        display: none;
+      }
+    }
+
+    label {
+      position: absolute;
+      top: 1.5rem;
+      left: 1.5rem;
+      color: #616475;
+
+      &::after {
+        content: "search location";
+        width: max-content;
+        font-size: 1.6rem;
+        color: #616475;
+        position: absolute;
+        z-index: 500;
+        top: 0;
+        left: 3.5rem;
+      }
+
+      span {
+        font-size: 2rem;
+      }
 
     }
   }
+
+  &__button {
+    padding: 1.5rem;
+    color: var(--color-off-white);
+    background-color: #3C47E9;
+    border: none;
+    flex-shrink: 0;
+    font-size: 1.6rem;
+    cursor: pointer;
+  }
+}
+
+.previous-searches {
+  &--list {
+    margin: 0 4.6rem;
+    list-style: none;
+    color: var(--color-off-white);
+
+    @media only screen and (max-width: 600px) {
+      margin: 0 1.2rem;
+    }
+  }
+
+  &--item {
+    padding: 2.3rem 1.2rem;
+    font-size: 1.6rem;
+    margin-bottom: 2.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border: 1px solid transparent;
+    transition: all .3s;
+
+    p {
+      text-transform: capitalize;
+    }
+
+    span {
+      color: #616475;
+      text-align: right;
+      opacity: 0;
+
+      transition: all .3s;
+    }
+
+    &:hover {
+      border: 1px solid #616475;
+
+      span {
+        opacity: 1;
+      }
+    }
+  }
+}
+
+.content {
+  flex: 2.2;
+}
+
+.hidden {
+  display: none;
 }

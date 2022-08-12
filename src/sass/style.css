@@ -13,7 +13,7 @@
 }
 
 html {
-  box-sizing: inherit;
+  box-sizing: border-box;
   font-size: 62.5%;
 }
 
@@ -26,10 +26,21 @@ main {
   background-color: #100E1D;
   display: flex;
 }
+@media only screen and (max-width: 600px) {
+  main {
+    flex-direction: column;
+  }
+}
 
 .sidebar {
   background-color: var(--primary-color);
-  flex-basis: 45rem;
+  flex: 1;
+  position: relative;
+}
+@media only screen and (max-width: 600px) {
+  .sidebar {
+    flex: none;
+  }
 }
 
 .sidebar-top {
@@ -39,19 +50,41 @@ main {
   align-items: center;
   color: var(--color-off-white);
 }
-.sidebar-top__search {
+@media only screen and (max-width: 1000px) {
+  .sidebar-top {
+    flex-direction: column;
+    align-items: start;
+    gap: 1rem;
+  }
+}
+@media only screen and (max-width: 600px) {
+  .sidebar-top {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    margin: 2.5rem 2.5rem 0;
+  }
+}
+.sidebar-top__search, .sidebar-top__current-location {
   background-color: #6E707A;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+.sidebar-top__search:hover, .sidebar-top__current-location:hover {
+  background-color: var(--color-off-white);
+  color: #6E707A;
+}
+.sidebar-top__search {
   padding: 1rem 1.8rem;
   font-size: 1.6rem;
 }
 .sidebar-top__current-location {
-  background-color: #6E707A;
   border-radius: 50%;
   display: flex;
   justify-content: center;
   align-items: center;
-  height: 4.5rem;
-  width: 4.5rem;
+  height: 4rem;
+  width: 4rem;
 }
 
 .sidebar-body {
@@ -68,6 +101,11 @@ main {
   width: 100%;
   position: relative;
   margin-bottom: 3rem;
+}
+@media only screen and (max-width: 600px) {
+  .weather-illustration {
+    height: 32.6rem;
+  }
 }
 .weather-illustration::after {
   content: "";
@@ -90,6 +128,12 @@ main {
   justify-content: space-between;
   align-items: center;
   margin-bottom: 8.7rem;
+}
+@media only screen and (max-width: 600px) {
+  .temperature-details {
+    gap: 2.3rem;
+    margin-bottom: 4.8rem;
+  }
 }
 .temperature-details .current-temperature {
   color: var(--color-off-white);
@@ -115,6 +159,11 @@ main {
   gap: 3.2rem;
   margin-bottom: 5.2rem;
 }
+@media only screen and (max-width: 600px) {
+  .other-details {
+    margin-bottom: 10.5rem;
+  }
+}
 .other-details .current-time {
   display: flex;
   justify-content: space-between;
@@ -125,6 +174,127 @@ main {
   justify-content: space-between;
   align-items: center;
   gap: 0.9rem;
+}
+
+.searchbar {
+  position: absolute;
+  left: 0;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 2;
+  background-color: var(--primary-color);
+}
+
+.searchbar-close {
+  margin: 2rem 5.3rem 4.5rem;
+  font-size: 1.8rem;
+  text-align: right;
+  color: var(--color-off-white);
+}
+@media only screen and (max-width: 600px) {
+  .searchbar-close {
+    margin: 1.8rem 1.8rem 3rem;
+  }
+}
+
+.searchbar-top {
+  margin: 0 4.6rem 5.8rem;
+  display: flex;
+  gap: 1.2rem;
+}
+@media only screen and (max-width: 600px) and (max-width: 600px) {
+  .searchbar-top {
+    margin: 0 1.2rem 3.8rem;
+  }
+}
+.searchbar-top__input {
+  flex: 1;
+  overflow: hidden;
+  position: relative;
+}
+.searchbar-top__input input {
+  width: 100%;
+  background-color: transparent;
+  border: 1px solid var(--color-off-white);
+  padding: 1.5rem;
+  font-size: 1.6rem;
+  color: var(--color-off-white);
+}
+.searchbar-top__input input:focus + label {
+  display: none;
+}
+.searchbar-top__input label {
+  position: absolute;
+  top: 1.5rem;
+  left: 1.5rem;
+  color: #616475;
+}
+.searchbar-top__input label::after {
+  content: "search location";
+  width: max-content;
+  font-size: 1.6rem;
+  color: #616475;
+  position: absolute;
+  z-index: 500;
+  top: 0;
+  left: 3.5rem;
+}
+.searchbar-top__input label span {
+  font-size: 2rem;
+}
+.searchbar-top__button {
+  padding: 1.5rem;
+  color: var(--color-off-white);
+  background-color: #3C47E9;
+  border: none;
+  flex-shrink: 0;
+  font-size: 1.6rem;
+  cursor: pointer;
+}
+
+.previous-searches--list {
+  margin: 0 4.6rem;
+  list-style: none;
+  color: var(--color-off-white);
+}
+@media only screen and (max-width: 600px) {
+  .previous-searches--list {
+    margin: 0 1.2rem;
+  }
+}
+.previous-searches--item {
+  padding: 2.3rem 1.2rem;
+  font-size: 1.6rem;
+  margin-bottom: 2.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border: 1px solid transparent;
+  transition: all 0.3s;
+}
+.previous-searches--item p {
+  text-transform: capitalize;
+}
+.previous-searches--item span {
+  color: #616475;
+  text-align: right;
+  opacity: 0;
+  transition: all 0.3s;
+}
+.previous-searches--item:hover {
+  border: 1px solid #616475;
+}
+.previous-searches--item:hover span {
+  opacity: 1;
+}
+
+.content {
+  flex: 2.2;
+}
+
+.hidden {
+  display: none;
 }
 
 /*# sourceMappingURL=style.css.map */

@@ -16,6 +16,21 @@
   <body>
     <main>
       <div class="sidebar">
+        <div class="searchbar hidden">
+          <div class="searchbar-close"><span class="material-symbols-outlined">close</span></div>
+          <form class="searchbar-top">
+            <div class="searchbar-top__input">
+              <input id="search" name="search" type="text">
+              <label for="search"><span class="material-symbols-outlined">search</span></label>
+            </div>
+            <button class="searchbar-top__button" type="submit">Search</button>
+          </form>
+          <ul class="previous-searches--list">
+            <li class="previous-searches--item"><p>London</p> <span class="material-symbols-outlined">navigate_next</span></li>
+            <li class="previous-searches--item"><p>Barcelona</p> <span class="material-symbols-outlined">navigate_next</span></li>
+            <li class="previous-searches--item"><p>Long Beach</p> <span class="material-symbols-outlined">navigate_next</span></li>
+          </ul>
+        </div>
         <div class="sidebar-top">
           <div class="sidebar-top__search">Search for places</div>
           <div class="sidebar-top__current-location"><span class="material-symbols-outlined">my_location</span></div>
@@ -29,7 +44,7 @@
             <div class="current-weather">Shower</div>
           </div>
           <div class="other-details">
-            <div class="current-time"><span>Today</span> <span>&middot;</span> <span>Fri,5 Jun</span></div>
+            <div class="current-time"><span>Today</span> <span>&middot;</span> <span>Fri, 5 Jun</span></div>
             <div class="current-location"><span class="material-symbols-outlined current-location--icon">location_on</span> Helsinki
             </div>
           </div>
