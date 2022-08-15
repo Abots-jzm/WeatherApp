@@ -412,6 +412,8 @@ main {
   font-size: 1.5rem;
   background-color: rgba(255, 255, 255, 0.3);
   border-radius: 50%;
+  transform: rotate(315deg);
+  transition: all 0.5s;
 }
 .day-highlights__humidity__progress-bar {
   align-self: stretch;
@@ -431,7 +433,8 @@ main {
 }
 .day-highlights__humidity__progress-bar--inner-bar {
   background-color: #FFEC65;
-  width: 80%;
+  width: 0;
+  transition: all 2s;
 }
 .day-highlights__humidity__progress-bar--values {
   display: flex;
@@ -478,11 +481,29 @@ main {
 }
 
 .spinner {
-  background-color: red;
+  background-color: #100E1D;
   width: 100%;
   height: 100%;
+  display: flex;
+  justify-content: center;
+  padding-top: 25rem;
+  padding-bottom: 50rem;
+}
+.spinner__inner {
+  width: 5rem;
+  height: 5rem;
+  border: 3px solid rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  border-top-color: #FFF;
+  animation: spin 1s ease-in-out infinite;
+  -webkit-animation: spin 1s ease-in-out infinite;
 }
 
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
 .hidden {
   display: none;
 }
