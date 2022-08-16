@@ -314,7 +314,7 @@ function timeout(s) {
 
 //START
 function init(arg = "current") {
-  Promise.race([displayWeatherDetails(arg), timeout(10)]).catch(e => handleError(e));
+  Promise.race([displayWeatherDetails(arg), timeout(15)]).catch(e => handleError(e));
 }
 
 init();
