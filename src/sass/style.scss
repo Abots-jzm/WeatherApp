@@ -33,6 +33,7 @@ main {
 
 .sidebar {
   background-color: var(--primary-color);
+  color: var(--primary-color);
   flex: 1;
   position: relative;
 
@@ -337,6 +338,7 @@ main {
 .content {
   flex: 2.2;
   padding: 4.2rem 13.5rem 2.5rem;
+  color: #100E1D;
 
   @media only screen and (max-width: 600px) {
     padding: 5.2rem 2.4rem 2.4rem;
@@ -568,7 +570,7 @@ main {
 }
 
 .spinner {
-  background-color: #100E1D;
+  background-color: currentColor;
   width: 100%;
   height: 100%;
   display: flex;
@@ -584,6 +586,23 @@ main {
     border-top-color: #FFF;
     animation: spin 1s ease-in-out infinite;
     -webkit-animation: spin 1s ease-in-out infinite;
+  }
+
+  &__error {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5rem;
+    color: var(--color-off-white);
+
+    div {
+      font-size: 5rem;
+    }
+
+    p {
+      padding: 0 1rem;
+      font-size: 2rem;
+    }
   }
 }
 

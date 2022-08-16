@@ -22,10 +22,11 @@ async function getWeatherDetails(key) {
   try {
     const request = await fetch(`${API_URL}/currentconditions/v1/${key}?apikey=${API_KEY}&details=true`);
     if (!request.ok)
-      throw new Error("cannot retrieve current weather details. Try another time");
+      throw new Error();
 
     return await request.json();
   } catch (e) {
+    e.message = "cannot retrieve current weather details. Try another time";
     throw e;
   }
 }
@@ -34,10 +35,11 @@ async function getForecastDetails(key) {
   try {
     const request = await fetch(`${API_URL}/forecasts/v1/daily/5day/${key}?apikey=${API_KEY}&metric=true`);
     if (!request.ok)
-      throw new Error("cannot retrieve weather forecast at the moment. Try another time");
+      throw new Error();
 
     return await request.json();
   } catch (e) {
+    e.message = "cannot retrieve weather forecast at the moment. Try another time";
     throw e;
   }
 }
@@ -48,7 +50,7 @@ async function getLocationKey(search) {
       const position = await getPosition();
       const request = await fetch(`${API_URL}/locations/v1/cities/geoposition/search?apikey=${API_KEY}&q=${position.coords.latitude}%2C${position.coords.longitude}`);
       if (!request.ok)
-        throw new Error("Cannot retrieve current location at the moment. Try again later");
+        throw new Error();
 
       const data = await request.json();
       displayedLocation = data.ParentCity.LocalizedName;
@@ -56,13 +58,14 @@ async function getLocationKey(search) {
     } else {
       const request = await fetch(`${API_URL}/locations/v1/cities/autocomplete?apikey=${API_KEY}&q=${search}`);
       if (!request.ok)
-        throw new Error("Cannot retrieve current location at the moment. Try again later");
+        throw new Error();
 
       const data = await request.json();
       displayedLocation = data[0].LocalizedName;
       return data[0].Key;
     }
   } catch (e) {
+    e.message = "Cannot retrieve current location at the moment. Try again later";
     throw e;
   }
 }
@@ -78,13 +81,13 @@ async function displayWeatherDetails(query) {
     renderForecast(forecastData);
     addHandlers();
   } catch (e) {
-    console.log(e);
+    throw e;
   }
 }
 
 function getDateText(today = new Date()) {
   const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-  const weekDays = ["Sun", "Tue", "Wed", "Thur", "Fri", "Sat"];
+  const weekDays = ["Sun", "Mon", "Tue", "Wed", "Thur", "Fri", "Sat"];
   return `${weekDays[today.getDay()]}, ${today.getDate()} ${monthNames[today.getMonth()]}`;
 }
 
@@ -108,7 +111,7 @@ function addHandlers() {
   });
 }
 
-function revealSection(entries, observer) {
+function revealSection(entries, _) {
   const [entry] = entries;
 
   if (entry.isIntersecting)
@@ -131,7 +134,8 @@ function renderPrevSearchesList() {
     container.insertAdjacentHTML("afterbegin", html);
   });
 
-  container.querySelectorAll(".previous-searches--item").forEach(el => el.addEventListener("click", function (e) {
+  container.querySelectorAll(".previous-searches--item").forEach(el => el.addEventListener("click", function () {
+    document.querySelector(".searchbar").classList.add("hidden");
     init(this.firstChild.textContent);
   }));
 }
@@ -139,7 +143,7 @@ function renderPrevSearchesList() {
 function renderForecast(data) {
   const filteredData = data.DailyForecasts.map((value, index) => {
     return {
-      date: index === 0 ? "Tomorrow" : getDateText(new Date(value.Date)),
+      date: index === 1 ? "Tomorrow" : getDateText(new Date(value.Date)),
       text: value.Day.IconPhrase,
       min: value.Temperature.Minimum.Value,
       max: value.Temperature.Maximum.Value,
@@ -147,8 +151,8 @@ function renderForecast(data) {
   });
 
   const allDays = document.querySelectorAll(".future-temperatures__day");
-  allDays.forEach((value, key, parent) => {
-    value.querySelector(".future-temperatures__date").textContent = filteredData[key].date;
+  allDays.forEach((value, key) => {
+    value.querySelector(".future-temperatures__date").textContent = key === 0 ? "Today" : filteredData[key].date;
     value.querySelector(".future-temperatures__illustration").style.backgroundImage = `url(../../${getImageURL(filteredData[key].text)})`;
     value.querySelector(".future-temperatures__temperatures--low").textContent = Math.round(filteredData[key].min) + "°C";
     value.querySelector(".future-temperatures__temperatures--high").textContent = Math.round(filteredData[key].max) + "°C";
@@ -290,9 +294,25 @@ function removeSpinner(element, html) {
   element.innerHTML = html;
 }
 
+function handleError(e) {
+  sidebar.innerHTML = `
+      <div class="spinner">
+        <div class="spinner__error">
+          <div><i class="fa-solid fa-triangle-exclamation"></i></div>
+          <p>${e.message}</p>
+        </div>
+      </div>`;
+}
+
+function timeout(s) {
+  return new Promise((_, reject) => {
+    setTimeout(() => reject(new Error("Request time out. Check your internet connection")), s * 1000);
+  });
+}
+
 //START
 function init(arg = "current") {
-  displayWeatherDetails(arg);
+  Promise.race([displayWeatherDetails(arg), timeout(10)]).catch(e => handleError(e));
 }
 
 init();
