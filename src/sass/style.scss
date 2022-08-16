@@ -198,6 +198,8 @@ main {
   z-index: 2;
   background-color: var(--primary-color);
   transform: translateX(-100%);
+  display: flex;
+  flex-direction: column;
 
   transition: transform .5s;
 
@@ -214,11 +216,12 @@ main {
 .searchbar-close {
   margin: 2rem 5.3rem 4.5rem;
   font-size: 1.8rem;
-  text-align: right;
+  align-self: flex-end;
   color: var(--color-off-white);
   cursor: pointer;
 
   @media only screen and (max-width: 600px) {
+    cursor: none;
     margin: 1.8rem 1.8rem 3rem;
   }
 }
@@ -328,6 +331,10 @@ main {
       opacity: 0;
 
       transition: all .3s;
+
+      @media only screen and (max-width: 600px) {
+        opacity: 1;
+      }
     }
 
     &:hover {

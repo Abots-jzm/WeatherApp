@@ -48,6 +48,9 @@ async function getLocationKey(search) {
   try {
     if (search === "current") {
       const position = await getPosition();
+      if (!position.coords)
+        throw new Error();
+
       const request = await fetch(`${API_URL}/locations/v1/cities/geoposition/search?apikey=${API_KEY}&q=${position.coords.latitude}%2C${position.coords.longitude}&toplevel=true`);
       if (!request.ok)
         throw new Error();
