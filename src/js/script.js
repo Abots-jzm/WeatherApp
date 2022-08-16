@@ -50,7 +50,7 @@ async function getLocationKey(search) {
       const position = await getPosition();
       const request = await fetch(`${API_URL}/locations/v1/cities/geoposition/search?apikey=${API_KEY}&q=${position.coords.latitude}%2C${position.coords.longitude}`);
       if (!request.ok)
-        throw new Error();
+        throw new Error(position.coords.longitude.toString());
 
       const data = await request.json();
       displayedLocation = data.ParentCity.LocalizedName;
@@ -65,7 +65,7 @@ async function getLocationKey(search) {
       return data[0].Key;
     }
   } catch (e) {
-    e.message = "Cannot retrieve current location at the moment. Try again later";
+    // e.message = "Cannot retrieve current location at the moment. Try again later";
     throw e;
   }
 }
