@@ -6,6 +6,8 @@ const API_KEY = "mj1ocFZbLnAaffWkZGgRjS10NCwGSisC";
 const sidebar = document.querySelector(".sidebar");
 const content = document.querySelector(".content");
 
+const previousSearches = {arr: []};
+
 let displayedLocation;
 
 //FUNCTIONS
@@ -40,7 +42,7 @@ async function getForecastDetails(key) {
   }
 }
 
-async function getLocationKey(search = "current") {
+async function getLocationKey(search) {
   try {
     if (search === "current") {
       const position = await getPosition();
@@ -65,14 +67,14 @@ async function getLocationKey(search = "current") {
   }
 }
 
-async function getCurrentPositionWeather() {
+async function displayWeatherDetails(query) {
   try {
     const sidebarHTML = renderSpinner(sidebar);
     const contentHTML = renderSpinner(content);
-    const key = await getLocationKey();
+    const key = await getLocationKey(query);
     const [data, forecastData] = await Promise.all([getWeatherDetails(key), getForecastDetails(key)]);
     clearSpinners(sidebarHTML, contentHTML);
-    renderCurrentConditions(data[0], sidebarHTML, contentHTML);
+    renderCurrentConditions(data[0]);
     renderForecast(forecastData);
     addHandlers();
   } catch (e) {
@@ -86,18 +88,24 @@ function getDateText(today = new Date()) {
   return `${weekDays[today.getDay()]}, ${today.getDate()} ${monthNames[today.getMonth()]}`;
 }
 
-function init() {
-  getCurrentPositionWeather();
-}
-
 //EVENT LISTENERS
 function addHandlers() {
   document.querySelector(".sidebar-top__search").addEventListener("click", () => {
-    console.log("shit");
+    renderPrevSearchesList();
     document.querySelector(".searchbar").classList.remove("hidden");
   });
   document.querySelector(".searchbar-close").addEventListener("click", () => document.querySelector(".searchbar").classList.add("hidden"));
-  document.querySelector(".sidebar-top__current-location").addEventListener("click", () => getCurrentPositionWeather());
+  document.querySelector(".sidebar-top__current-location").addEventListener("click", () => displayWeatherDetails());
+
+
+  document.querySelector(".searchbar-top").addEventListener("submit", (e) => {
+    e.preventDefault();
+    document.querySelector(".searchbar").classList.add("hidden");
+    const searchInput = document.querySelector(".searchbar-top__input input");
+    const query = searchInput.value;
+    searchInput.blur();
+    init(query);
+  });
 }
 
 function revealSection(entries, observer) {
@@ -114,6 +122,20 @@ const sectionObserver = new IntersectionObserver(revealSection, {
 
 
 //RENDER FUNCTION
+function renderPrevSearchesList() {
+  const container = document.querySelector(".previous-searches--list");
+  const data = JSON.parse(localStorage.getItem("data"));
+  container.innerHTML = "";
+  data.arr.forEach((value) => {
+    const html = `<li class="previous-searches--item"><p>${value}</p> <span class="material-symbols-outlined">navigate_next</span></li>`;
+    container.insertAdjacentHTML("afterbegin", html);
+  });
+
+  container.querySelectorAll(".previous-searches--item").forEach(el => el.addEventListener("click", function (e) {
+    init(this.firstChild.textContent);
+  }));
+}
+
 function renderForecast(data) {
   const filteredData = data.DailyForecasts.map((value, index) => {
     return {
@@ -154,7 +176,7 @@ function renderVisibility(visibility) {
 
 function renderAirPressure(pressure) {
   document.querySelector(".day-highlights__pressure .day-highlights--value").firstChild.nodeValue = pressure + " ";
-  slowlyIncrement(document.querySelector(".day-highlights__pressure .day-highlights--value"), 1, pressure, 2.5, 1, "");
+  slowlyIncrement(document.querySelector(".day-highlights__pressure .day-highlights--value"), 1, pressure, 2.5, 0, "");
 
 }
 
@@ -181,12 +203,26 @@ function clearSpinners(sidebarHTML = "", contentHTML = "") {
     removeSpinner(content, contentHTML);
 }
 
+function updateSearchList(searches) {
+  if (searches.includes(displayedLocation)) {
+    searches.splice(searches.indexOf(displayedLocation), 1);
+    localStorage.setItem("previous searches", JSON.stringify(previousSearches));
+    return;
+  }
+  if (searches.length > 5)
+    searches.pop();
+
+  searches.unshift(displayedLocation);
+  localStorage.setItem("data", JSON.stringify(previousSearches));
+}
+
 function renderCurrentConditions(data) {
   document.querySelector(".weather-illustration img").setAttribute("src", getImageURL(data.WeatherText));
   document.querySelector(".current-temperature p").textContent = Math.round(+data.Temperature.Metric.Value) + "";
   document.querySelector(".current-weather").textContent = data["WeatherText"];
   document.querySelector(".date-text").textContent = getDateText();
   document.querySelector(".current-location p").textContent = displayedLocation;
+  updateSearchList(previousSearches.arr);
   renderWindStatus(data.Wind.Speed.Imperial.Value, data.Wind.Direction.Degrees, data.Wind.Direction.English);
   renderHumidity(data.RelativeHumidity);
   renderVisibility(data.Visibility.Imperial.Value);
@@ -205,7 +241,6 @@ function smoothEntry(sections, hiddenClass) {
       clearInterval(interval);
 
     sections[counter].classList.remove(hiddenClass);
-    console.log(sections[counter]);
 
     counter++;
   }, 200);
@@ -256,4 +291,8 @@ function removeSpinner(element, html) {
 }
 
 //START
+function init(arg = "current") {
+  displayWeatherDetails(arg);
+}
+
 init();
