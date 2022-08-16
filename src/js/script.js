@@ -304,6 +304,7 @@ function handleError(e) {
           <p>${e.message}</p>
         </div>
       </div>`;
+  content.innerHTML = "";
 }
 
 function timeout(s) {
