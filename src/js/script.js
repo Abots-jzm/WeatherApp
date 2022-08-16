@@ -3,10 +3,6 @@
 const API_URL = "http://dataservice.accuweather.com";
 const API_KEY = "mj1ocFZbLnAaffWkZGgRjS10NCwGSisC";
 
-const searchButton = document.querySelector(".sidebar-top__search");
-const searchPanel = document.querySelector(".searchbar");
-const closeSearchBarBtn = document.querySelector(".searchbar-close");
-const currentLocationBtn = document.querySelector(".sidebar-top__current-location");
 const sidebar = document.querySelector(".sidebar");
 const content = document.querySelector(".content");
 
@@ -25,6 +21,18 @@ async function getWeatherDetails(key) {
     const request = await fetch(`${API_URL}/currentconditions/v1/${key}?apikey=${API_KEY}&details=true`);
     if (!request.ok)
       throw new Error("cannot retrieve current weather details. Try another time");
+
+    return await request.json();
+  } catch (e) {
+    throw e;
+  }
+}
+
+async function getForecastDetails(key) {
+  try {
+    const request = await fetch(`${API_URL}/forecasts/v1/daily/5day/${key}?apikey=${API_KEY}&metric=true`);
+    if (!request.ok)
+      throw new Error("cannot retrieve weather forecast at the moment. Try another time");
 
     return await request.json();
   } catch (e) {
@@ -62,17 +70,19 @@ async function getCurrentPositionWeather() {
     const sidebarHTML = renderSpinner(sidebar);
     const contentHTML = renderSpinner(content);
     const key = await getLocationKey();
-    const data = await getWeatherDetails(key);
+    const [data, forecastData] = await Promise.all([getWeatherDetails(key), getForecastDetails(key)]);
+    clearSpinners(sidebarHTML, contentHTML);
     renderCurrentConditions(data[0], sidebarHTML, contentHTML);
+    renderForecast(forecastData);
+    addHandlers();
   } catch (e) {
     console.log(e);
   }
 }
 
-function getDateText() {
-  const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+function getDateText(today = new Date()) {
+  const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
   const weekDays = ["Sun", "Tue", "Wed", "Thur", "Fri", "Sat"];
-  const today = new Date();
   return `${weekDays[today.getDay()]}, ${today.getDate()} ${monthNames[today.getMonth()]}`;
 }
 
@@ -81,16 +91,55 @@ function init() {
 }
 
 //EVENT LISTENERS
-searchButton.addEventListener("click", () => searchPanel.classList.remove("hidden"));
-closeSearchBarBtn.addEventListener("click", () => searchPanel.classList.add("hidden"));
-currentLocationBtn.addEventListener("click", () => getCurrentPositionWeather());
+function addHandlers() {
+  document.querySelector(".sidebar-top__search").addEventListener("click", () => {
+    console.log("shit");
+    document.querySelector(".searchbar").classList.remove("hidden");
+  });
+  document.querySelector(".searchbar-close").addEventListener("click", () => document.querySelector(".searchbar").classList.add("hidden"));
+  document.querySelector(".sidebar-top__current-location").addEventListener("click", () => getCurrentPositionWeather());
+}
+
+function revealSection(entries, observer) {
+  const [entry] = entries;
+
+  if (entry.isIntersecting)
+    entry.target.classList.remove("day-highlights__section--hidden");
+}
+
+const sectionObserver = new IntersectionObserver(revealSection, {
+  root: null,
+  threshold: 0.15,
+});
+
 
 //RENDER FUNCTION
+function renderForecast(data) {
+  const filteredData = data.DailyForecasts.map((value, index) => {
+    return {
+      date: index === 0 ? "Tomorrow" : getDateText(new Date(value.Date)),
+      text: value.Day.IconPhrase,
+      min: value.Temperature.Minimum.Value,
+      max: value.Temperature.Maximum.Value,
+    };
+  });
+
+  const allDays = document.querySelectorAll(".future-temperatures__day");
+  allDays.forEach((value, key, parent) => {
+    value.querySelector(".future-temperatures__date").textContent = filteredData[key].date;
+    value.querySelector(".future-temperatures__illustration").style.backgroundImage = `url(../../${getImageURL(filteredData[key].text)})`;
+    value.querySelector(".future-temperatures__temperatures--low").textContent = Math.round(filteredData[key].min) + "°C";
+    value.querySelector(".future-temperatures__temperatures--high").textContent = Math.round(filteredData[key].max) + "°C";
+  });
+
+  smoothEntry(allDays, "hidden");
+}
+
 function renderWindStatus(speed, degree, direction) {
   const section = document.querySelector(".day-highlights__wind");
   slowlyIncrement(section.querySelector(".day-highlights--value"), 1, speed, 1.5, 1);
   section.querySelector(".day-highlights__wind--direction").lastChild.nodeValue = direction;
-  section.querySelector(".day-highlights__wind--direction span").style.transform = `rotate(${degree}deg)`;
+  section.querySelector(".day-highlights__wind--direction span").style.transform = `rotate(${degree - 45}deg)`;
 }
 
 function renderHumidity(humidity) {
@@ -125,24 +174,44 @@ function slowlyIncrement(element, start, end, time, decimalPoints, extraString =
   }, steps);
 }
 
-function renderCurrentConditions(data, sidebarHTML = "", contentHTML = "") {
+function clearSpinners(sidebarHTML = "", contentHTML = "") {
   if (sidebarHTML)
     removeSpinner(sidebar, sidebarHTML);
-  renderImage(data["WeatherText"]);
+  if (contentHTML)
+    removeSpinner(content, contentHTML);
+}
+
+function renderCurrentConditions(data) {
+  document.querySelector(".weather-illustration img").setAttribute("src", getImageURL(data.WeatherText));
   document.querySelector(".current-temperature p").textContent = Math.round(+data.Temperature.Metric.Value) + "";
   document.querySelector(".current-weather").textContent = data["WeatherText"];
   document.querySelector(".date-text").textContent = getDateText();
   document.querySelector(".current-location p").textContent = displayedLocation;
-  if (contentHTML)
-    removeSpinner(content, contentHTML);
   renderWindStatus(data.Wind.Speed.Imperial.Value, data.Wind.Direction.Degrees, data.Wind.Direction.English);
   renderHumidity(data.RelativeHumidity);
   renderVisibility(data.Visibility.Imperial.Value);
   renderAirPressure(data.Pressure.Metric.Value);
-  console.log(data);
+  const allSections = document.querySelectorAll(".day-highlights__section");
+  if (window.innerWidth < 600)
+    allSections.forEach(section => sectionObserver.observe(section));
+  else
+    smoothEntry(allSections, "day-highlights__section--hidden");
 }
 
-function renderImage(text) {
+function smoothEntry(sections, hiddenClass) {
+  let counter = 0;
+  const interval = setInterval(() => {
+    if (counter >= sections.length)
+      clearInterval(interval);
+
+    sections[counter].classList.remove(hiddenClass);
+    console.log(sections[counter]);
+
+    counter++;
+  }, 200);
+}
+
+function getImageURL(text) {
   const baseSrc = "./img/";
   let img;
   const png = ".png";
@@ -166,9 +235,9 @@ function renderImage(text) {
   else if (text.endsWith("storm") || text.endsWith("storms"))
     img = "Thunderstorm";
   else
-    return;
+    img = "Shower";
 
-  document.querySelector(".weather-illustration img").setAttribute("src", baseSrc + img + png);
+  return baseSrc + img + png;
 }
 
 function renderSpinner(element) {
@@ -176,7 +245,6 @@ function renderSpinner(element) {
       <div class="spinner">
         <div class="spinner__inner">&nbsp;</div>
       </div>`;
-
 
   const previousHTML = element.innerHTML;
   element.innerHTML = spinnerHTML;
@@ -188,387 +256,4 @@ function removeSpinner(element, html) {
 }
 
 //START
-// init();
-
-const DUMMY_DATA = {
-  "LocalObservationDateTime": "2022-08-15T19:57:00+01:00",
-  "EpochTime": 1660589820,
-  "WeatherText": "Rain",
-  "WeatherIcon": 18,
-  "HasPrecipitation": true,
-  "PrecipitationType": "Rain",
-  "IsDayTime": false,
-  "Temperature": {
-    "Metric": {
-      "Value": 25,
-      "Unit": "C",
-      "UnitType": 17,
-    },
-    "Imperial": {
-      "Value": 77,
-      "Unit": "F",
-      "UnitType": 18,
-    },
-  },
-  "RealFeelTemperature": {
-    "Metric": {
-      "Value": 27.8,
-      "Unit": "C",
-      "UnitType": 17,
-      "Phrase": "Very Warm",
-    },
-    "Imperial": {
-      "Value": 82,
-      "Unit": "F",
-      "UnitType": 18,
-      "Phrase": "Very Warm",
-    },
-  },
-  "RealFeelTemperatureShade": {
-    "Metric": {
-      "Value": 27.8,
-      "Unit": "C",
-      "UnitType": 17,
-      "Phrase": "Very Warm",
-    },
-    "Imperial": {
-      "Value": 82,
-      "Unit": "F",
-      "UnitType": 18,
-      "Phrase": "Very Warm",
-    },
-  },
-  "RelativeHumidity": 94,
-  "IndoorRelativeHumidity": 94,
-  "DewPoint": {
-    "Metric": {
-      "Value": 23.9,
-      "Unit": "C",
-      "UnitType": 17,
-    },
-    "Imperial": {
-      "Value": 75,
-      "Unit": "F",
-      "UnitType": 18,
-    },
-  },
-  "Wind": {
-    "Direction": {
-      "Degrees": 203,
-      "Localized": "SSW",
-      "English": "SSW",
-    },
-    "Speed": {
-      "Metric": {
-        "Value": 13,
-        "Unit": "km/h",
-        "UnitType": 7,
-      },
-      "Imperial": {
-        "Value": 8.1,
-        "Unit": "mi/h",
-        "UnitType": 9,
-      },
-    },
-  },
-  "WindGust": {
-    "Speed": {
-      "Metric": {
-        "Value": 13,
-        "Unit": "km/h",
-        "UnitType": 7,
-      },
-      "Imperial": {
-        "Value": 8.1,
-        "Unit": "mi/h",
-        "UnitType": 9,
-      },
-    },
-  },
-  "UVIndex": 0,
-  "UVIndexText": "Low",
-  "Visibility": {
-    "Metric": {
-      "Value": 4.8,
-      "Unit": "km",
-      "UnitType": 6,
-    },
-    "Imperial": {
-      "Value": 3,
-      "Unit": "mi",
-      "UnitType": 2,
-    },
-  },
-  "ObstructionsToVisibility": "R-",
-  "CloudCover": 100,
-  "Ceiling": {
-    "Metric": {
-      "Value": 213,
-      "Unit": "m",
-      "UnitType": 5,
-    },
-    "Imperial": {
-      "Value": 700,
-      "Unit": "ft",
-      "UnitType": 0,
-    },
-  },
-  "Pressure": {
-    "Metric": {
-      "Value": 1011,
-      "Unit": "mb",
-      "UnitType": 14,
-    },
-    "Imperial": {
-      "Value": 29.85,
-      "Unit": "inHg",
-      "UnitType": 12,
-    },
-  },
-  "PressureTendency": {
-    "LocalizedText": "Steady",
-    "Code": "S",
-  },
-  "Past24HourTemperatureDeparture": {
-    "Metric": {
-      "Value": -2.2,
-      "Unit": "C",
-      "UnitType": 17,
-    },
-    "Imperial": {
-      "Value": -4,
-      "Unit": "F",
-      "UnitType": 18,
-    },
-  },
-  "ApparentTemperature": {
-    "Metric": {
-      "Value": 27.8,
-      "Unit": "C",
-      "UnitType": 17,
-    },
-    "Imperial": {
-      "Value": 82,
-      "Unit": "F",
-      "UnitType": 18,
-    },
-  },
-  "WindChillTemperature": {
-    "Metric": {
-      "Value": 25,
-      "Unit": "C",
-      "UnitType": 17,
-    },
-    "Imperial": {
-      "Value": 77,
-      "Unit": "F",
-      "UnitType": 18,
-    },
-  },
-  "WetBulbTemperature": {
-    "Metric": {
-      "Value": 24.3,
-      "Unit": "C",
-      "UnitType": 17,
-    },
-    "Imperial": {
-      "Value": 76,
-      "Unit": "F",
-      "UnitType": 18,
-    },
-  },
-  "Precip1hr": {
-    "Metric": {
-      "Value": 0.5,
-      "Unit": "mm",
-      "UnitType": 3,
-    },
-    "Imperial": {
-      "Value": 0.02,
-      "Unit": "in",
-      "UnitType": 1,
-    },
-  },
-  "PrecipitationSummary": {
-    "Precipitation": {
-      "Metric": {
-        "Value": 0.5,
-        "Unit": "mm",
-        "UnitType": 3,
-      },
-      "Imperial": {
-        "Value": 0.02,
-        "Unit": "in",
-        "UnitType": 1,
-      },
-    },
-    "PastHour": {
-      "Metric": {
-        "Value": 0.5,
-        "Unit": "mm",
-        "UnitType": 3,
-      },
-      "Imperial": {
-        "Value": 0.02,
-        "Unit": "in",
-        "UnitType": 1,
-      },
-    },
-    "Past3Hours": {
-      "Metric": {
-        "Value": 0.5,
-        "Unit": "mm",
-        "UnitType": 3,
-      },
-      "Imperial": {
-        "Value": 0.02,
-        "Unit": "in",
-        "UnitType": 1,
-      },
-    },
-    "Past6Hours": {
-      "Metric": {
-        "Value": 0.5,
-        "Unit": "mm",
-        "UnitType": 3,
-      },
-      "Imperial": {
-        "Value": 0.02,
-        "Unit": "in",
-        "UnitType": 1,
-      },
-    },
-    "Past9Hours": {
-      "Metric": {
-        "Value": 0.5,
-        "Unit": "mm",
-        "UnitType": 3,
-      },
-      "Imperial": {
-        "Value": 0.02,
-        "Unit": "in",
-        "UnitType": 1,
-      },
-    },
-    "Past12Hours": {
-      "Metric": {
-        "Value": 4.1,
-        "Unit": "mm",
-        "UnitType": 3,
-      },
-      "Imperial": {
-        "Value": 0.16,
-        "Unit": "in",
-        "UnitType": 1,
-      },
-    },
-    "Past18Hours": {
-      "Metric": {
-        "Value": 7,
-        "Unit": "mm",
-        "UnitType": 3,
-      },
-      "Imperial": {
-        "Value": 0.28,
-        "Unit": "in",
-        "UnitType": 1,
-      },
-    },
-    "Past24Hours": {
-      "Metric": {
-        "Value": 7,
-        "Unit": "mm",
-        "UnitType": 3,
-      },
-      "Imperial": {
-        "Value": 0.28,
-        "Unit": "in",
-        "UnitType": 1,
-      },
-    },
-  },
-  "TemperatureSummary": {
-    "Past6HourRange": {
-      "Minimum": {
-        "Metric": {
-          "Value": 25,
-          "Unit": "C",
-          "UnitType": 17,
-        },
-        "Imperial": {
-          "Value": 77,
-          "Unit": "F",
-          "UnitType": 18,
-        },
-      },
-      "Maximum": {
-        "Metric": {
-          "Value": 27.8,
-          "Unit": "C",
-          "UnitType": 17,
-        },
-        "Imperial": {
-          "Value": 82,
-          "Unit": "F",
-          "UnitType": 18,
-        },
-      },
-    },
-    "Past12HourRange": {
-      "Minimum": {
-        "Metric": {
-          "Value": 24.4,
-          "Unit": "C",
-          "UnitType": 17,
-        },
-        "Imperial": {
-          "Value": 76,
-          "Unit": "F",
-          "UnitType": 18,
-        },
-      },
-      "Maximum": {
-        "Metric": {
-          "Value": 27.8,
-          "Unit": "C",
-          "UnitType": 17,
-        },
-        "Imperial": {
-          "Value": 82,
-          "Unit": "F",
-          "UnitType": 18,
-        },
-      },
-    },
-    "Past24HourRange": {
-      "Minimum": {
-        "Metric": {
-          "Value": 23.5,
-          "Unit": "C",
-          "UnitType": 17,
-        },
-        "Imperial": {
-          "Value": 74,
-          "Unit": "F",
-          "UnitType": 18,
-        },
-      },
-      "Maximum": {
-        "Metric": {
-          "Value": 27.8,
-          "Unit": "C",
-          "UnitType": 17,
-        },
-        "Imperial": {
-          "Value": 82,
-          "Unit": "F",
-          "UnitType": 18,
-        },
-      },
-    },
-  },
-  "MobileLink": "http://www.accuweather.com/en/ng/shomolu/253773/current-weather/253773?lang=en-us",
-  "Link": "http://www.accuweather.com/en/ng/shomolu/253773/current-weather/253773?lang=en-us",
-};
-
-renderCurrentConditions(DUMMY_DATA);
+init();

@@ -196,6 +196,13 @@ main {
   bottom: 0;
   z-index: 2;
   background-color: var(--primary-color);
+
+  transition: transform .5s;
+}
+
+.searchbar.hidden {
+  transform: translateX(-100%);
+  display: block;
 }
 
 .searchbar-close {
@@ -234,6 +241,10 @@ main {
       font-size: 1.6rem;
       color: var(--color-off-white);
 
+      &:focus {
+        outline: none;
+      }
+
       &:focus + label {
         display: none;
       }
@@ -271,6 +282,12 @@ main {
     flex-shrink: 0;
     font-size: 1.6rem;
     cursor: pointer;
+
+    transition: all .3s;
+
+    &:hover {
+      background-color: #555EEA;
+    }
   }
 }
 
@@ -346,6 +363,7 @@ main {
     display: flex;
     justify-content: center;
     align-items: center;
+    text-decoration: none;
 
     &--active {
       background-color: var(--color-off-white);
@@ -369,6 +387,18 @@ main {
     justify-content: space-between;
     padding: 1.8rem;
     gap: 1rem;
+
+    transition: transform 1s, opacity 1s;
+
+    &:hover {
+      transform: translateY(-1rem);
+    }
+  }
+
+  &__day.hidden {
+    display: block !important;
+    opacity: 0;
+    transform: translateX(5rem);
   }
 
   &__date {
@@ -422,6 +452,17 @@ main {
     //justify-content: space-between;
     align-items: center;
     padding: 2.2rem 5rem 3.5rem;
+
+    transition: transform 1s, opacity 1s;
+
+    &--hidden {
+      opacity: 0;
+      transform: translateY(8rem);
+    }
+
+    &:hover {
+      transform: scale(1.05);
+    }
   }
 
   &__wind {

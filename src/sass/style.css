@@ -190,6 +190,12 @@ main {
   bottom: 0;
   z-index: 2;
   background-color: var(--primary-color);
+  transition: transform 0.5s;
+}
+
+.searchbar.hidden {
+  transform: translateX(-100%);
+  display: block;
 }
 
 .searchbar-close {
@@ -228,6 +234,9 @@ main {
   font-size: 1.6rem;
   color: var(--color-off-white);
 }
+.searchbar-top__input input:focus {
+  outline: none;
+}
 .searchbar-top__input input:focus + label {
   display: none;
 }
@@ -258,6 +267,10 @@ main {
   flex-shrink: 0;
   font-size: 1.6rem;
   cursor: pointer;
+  transition: all 0.3s;
+}
+.searchbar-top__button:hover {
+  background-color: #555EEA;
 }
 
 .previous-searches--list {
@@ -327,6 +340,7 @@ main {
   display: flex;
   justify-content: center;
   align-items: center;
+  text-decoration: none;
 }
 .unit-toggle__temp--active {
   background-color: var(--color-off-white);
@@ -348,6 +362,15 @@ main {
   justify-content: space-between;
   padding: 1.8rem;
   gap: 1rem;
+  transition: transform 1s, opacity 1s;
+}
+.future-temperatures__day:hover {
+  transform: translateY(-1rem);
+}
+.future-temperatures__day.hidden {
+  display: block !important;
+  opacity: 0;
+  transform: translateX(5rem);
 }
 .future-temperatures__date {
   color: var(--color-off-white);
@@ -395,6 +418,14 @@ main {
   gap: 1rem;
   align-items: center;
   padding: 2.2rem 5rem 3.5rem;
+  transition: transform 1s, opacity 1s;
+}
+.day-highlights__section--hidden {
+  opacity: 0;
+  transform: translateY(8rem);
+}
+.day-highlights__section:hover {
+  transform: scale(1.05);
 }
 .day-highlights__wind--direction {
   display: flex;
