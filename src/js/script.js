@@ -48,13 +48,12 @@ async function getLocationKey(search) {
   try {
     if (search === "current") {
       const position = await getPosition();
-      const request = await fetch(`${API_URL}/locations/v1/cities/geoposition/search?apikey=${API_KEY}&q=${position.coords.latitude}%2C${position.coords.longitude}`);
+      const request = await fetch(`${API_URL}/locations/v1/cities/geoposition/search?apikey=${API_KEY}&q=${position.coords.latitude}%2C${position.coords.longitude}&toplevel=true`);
       if (!request.ok)
         throw new Error();
 
       const data = await request.json();
-      console.log(data);
-      displayedLocation = data.ParentCity.LocalizedName;
+      displayedLocation = data.LocalizedName;
       return data.Key;
     } else {
       const request = await fetch(`${API_URL}/locations/v1/cities/autocomplete?apikey=${API_KEY}&q=${search}`);
