@@ -95,15 +95,17 @@ function getDateText(today = new Date()) {
 function addHandlers() {
   document.querySelector(".sidebar-top__search").addEventListener("click", () => {
     renderPrevSearchesList();
-    document.querySelector(".searchbar").classList.remove("hidden");
+    document.querySelector(".searchbar").classList.add("searchbar--show");
   });
-  document.querySelector(".searchbar-close").addEventListener("click", () => document.querySelector(".searchbar").classList.add("hidden"));
+  document.querySelector(".searchbar-close").addEventListener("click", () => {
+    document.querySelector(".searchbar").classList.remove("searchbar--show");
+  });
   document.querySelector(".sidebar-top__current-location").addEventListener("click", () => displayWeatherDetails());
 
 
   document.querySelector(".searchbar-top").addEventListener("submit", (e) => {
     e.preventDefault();
-    document.querySelector(".searchbar").classList.add("hidden");
+    document.querySelector(".searchbar").classList.remove("searchbar--show");
     const searchInput = document.querySelector(".searchbar-top__input input");
     const query = searchInput.value;
     searchInput.blur();
@@ -135,7 +137,7 @@ function renderPrevSearchesList() {
   });
 
   container.querySelectorAll(".previous-searches--item").forEach(el => el.addEventListener("click", function () {
-    document.querySelector(".searchbar").classList.add("hidden");
+    document.querySelector(".searchbar").classList.remove("searchbar--show");
     init(this.firstChild.textContent);
   }));
 }

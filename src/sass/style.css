@@ -191,7 +191,11 @@ main {
   bottom: 0;
   z-index: 2;
   background-color: var(--primary-color);
+  transform: translateX(-100%);
   transition: transform 0.5s;
+}
+.searchbar--show {
+  transform: translateX(0);
 }
 
 .searchbar.hidden {
@@ -542,6 +546,7 @@ main {
   font-size: 5rem;
 }
 .spinner__error p {
+  text-align: center;
   padding: 0 1rem;
   font-size: 2rem;
 }
