@@ -1,6 +1,6 @@
 "use strict";
 
-const API_URL = "http://dataservice.accuweather.com";
+const API_URL = "https://dataservice.accuweather.com";
 const API_KEY = "mj1ocFZbLnAaffWkZGgRjS10NCwGSisC";
 
 const sidebar = document.querySelector(".sidebar");
