@@ -224,7 +224,7 @@ function updateSearchList(searches) {
 }
 
 function renderCurrentConditions(data) {
-  document.querySelector(".weather-illustration img").setAttribute("src", getImageURL(data.WeatherText));
+  document.querySelector(".weather-illustration img")?.setAttribute("src", getImageURL(data.WeatherText));
   document.querySelector(".current-temperature p").textContent = Math.round(+data.Temperature.Metric.Value) + "";
   document.querySelector(".current-weather").textContent = data["WeatherText"];
   document.querySelector(".date-text").textContent = getDateText();
