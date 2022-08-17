@@ -14,7 +14,9 @@ let displayedLocation;
 
 function getPosition() {
   return new Promise(function (resolve, reject) {
-    navigator.geolocation.getCurrentPosition(resolve, reject);
+    navigator.geolocation.getCurrentPosition(resolve, () => {
+      reject(new Error("Location Access Denied. Please enable location sharing"));
+    });
   });
 }
 
@@ -66,7 +68,8 @@ async function getLocationKey(search) {
       return data[0].Key;
     }
   } catch (e) {
-    e.message = "Cannot retrieve current location at the moment. Try again later";
+    if (!e.message)
+      e.message = "Cannot retrieve current location at the moment. Try again later";
     throw e;
   }
 }
@@ -309,12 +312,7 @@ function handleError(e) {
 }
 
 //START
-navigator.geolocation.watchPosition(() => {
-  init();
-}, (e) => {
-  if (e.code === e.PERMISSION_DENIED)
-    handleError(new Error("Location Access Denied. Please enable location sharing"));
-});
+init();
 
 function init(arg = "current") {
   displayWeatherDetails(arg).catch(e => handleError(e));
