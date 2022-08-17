@@ -308,12 +308,6 @@ function handleError(e) {
   content.innerHTML = "";
 }
 
-function timeout(s) {
-  return new Promise((_, reject) => {
-    setTimeout(() => reject(new Error("Request time out. Check your internet connection")), s * 1000);
-  });
-}
-
 //START
 navigator.geolocation.watchPosition(() => {
   init();
@@ -323,7 +317,5 @@ navigator.geolocation.watchPosition(() => {
 });
 
 function init(arg = "current") {
-  Promise.race([displayWeatherDetails(arg), timeout(15)]).catch(e => handleError(e));
+  displayWeatherDetails(arg).catch(e => handleError(e));
 }
-
-// init();
