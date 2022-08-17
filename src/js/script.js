@@ -7,15 +7,15 @@ const sidebar = document.querySelector(".sidebar");
 const content = document.querySelector(".content");
 
 const previousSearches = {arr: []};
+const locationFailedStr = "Location Access Denied. Please enable location sharing";
 
 let displayedLocation;
 
 //FUNCTIONS
-
 function getPosition() {
   return new Promise(function (resolve, reject) {
     navigator.geolocation.getCurrentPosition(resolve, () => {
-      reject(new Error("Location Access Denied. Please enable location sharing"));
+      reject(new Error(locationFailedStr));
     });
   });
 }
@@ -68,7 +68,7 @@ async function getLocationKey(search) {
       return data[0].Key;
     }
   } catch (e) {
-    if (!e.message)
+    if (e.message !== locationFailedStr)
       e.message = "Cannot retrieve current location at the moment. Try again later";
     throw e;
   }
