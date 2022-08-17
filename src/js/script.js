@@ -315,7 +315,9 @@ function timeout(s) {
 }
 
 //START
-navigator.geolocation.watchPosition(init, (e) => {
+navigator.geolocation.watchPosition(() => {
+  init();
+}, (e) => {
   if (e.code === e.PERMISSION_DENIED)
     handleError(new Error("Location Access Denied. Please enable location sharing"));
 });
