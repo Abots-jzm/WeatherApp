@@ -104,7 +104,7 @@ function addHandlers() {
   document.querySelector(".searchbar-close").addEventListener("click", () => {
     document.querySelector(".searchbar").classList.remove("searchbar--show");
   });
-  document.querySelector(".sidebar-top__current-location").addEventListener("click", () => displayWeatherDetails());
+  document.querySelector(".sidebar-top__current-location").addEventListener("click", () => init());
 
 
   document.querySelector(".searchbar-top").addEventListener("submit", (e) => {
